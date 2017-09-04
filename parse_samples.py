@@ -28,11 +28,14 @@ def parse_filename(filename):
     return file_sample
 
 def get_flute_samples():
-    for sample_file in os.listdir(flute_sample_dir):
-        parse_filename(sample_file)
+   sample_list = [] 
+   for sample_file in os.listdir(flute_sample_dir):
+        sample_list.append(parse_filename(sample_file))
+   return sample_list
 
 def get_violin_samples():
+    sample_list = []
     for sample_file in os.listdir(violin_sample_dir):
-        parse_filename(sample_file)
+        sample_list.append(parse_filename(sample_file))
+    return sample_list
 
-get_flute_samples()
