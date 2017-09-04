@@ -5,7 +5,7 @@ violin_sample_dir = './res/violin'
 
 class Sample:
     def __init__(self, filename, instr, note, octave, duration, vol, condition):
-        self.filename = filename
+        self.filename = './res/' + instr + '/' + filename
         self.instr = instr
         self.note = note
         self.octave = octave
@@ -23,7 +23,7 @@ def parse_filename(filename):
     Returns a Sample encapsulating the information."""
     file_info = filename.split('_')
     file_sample = Sample(filename, file_info[0], file_info[1][:-1], int(file_info[1][-1:]), 
-                         file_info[2], file_info[3], file_info[4])
+                         file_info[2], file_info[3], file_info[4][:-4])
     # print(file_sample)
     return file_sample
 
