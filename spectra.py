@@ -54,6 +54,44 @@ def get_harmonic_spectra(sample):
     plt.plot(x_coord, y_coord, 'ro')
     plt.show()
 
+def calculate_spectra_on_frame(mat, val):
+    tot_vol = list(np.sum(mat, axis=0))
+
+    vols_norm = list(mat[:,val]) / tot_vol[val]
+    x_coord = []
+    y_coord = []
+    for i in range(len(vols_norm)):
+        if vols_norm[i] > 0.002 and i >= 20:
+            x_coord.append(64 * i / 6.0)
+            y_coord.append(vols_norm[i])
+    y_coord /= sum(y_coord)
+
+    x_coord_new = []
+    y_coord_new = []
+    last = 0
+    for i in range(1, len(x_coord)):
+        if (x_coord[i] - x_coord[i - 1]) > THRESHOLD_FOR_DISTANCE:
+            print(i)
+            # print("BLAH")
+            tot = 0.0
+            weighted_x = 0.0
+            for j in range(last, i):
+                tot += y_coord[j]
+                weighted_x += x_coord[j] * y_coord[j]
+            weighted_x /= tot
+            x_coord_new.append(weighted_x)
+            y_coord_new.append(tot)
+            last = i
+    tot = 0.0
+    weighted_x = 0.0
+    for j in range(last, len(x_coord)):
+        tot += y_coord[j]
+        weighted_x += x_coord[j] * y_coord[j]
+    weighted_x /= tot
+    x_coord_new.append(weighted_x)
+    y_coord_new.append(tot)
+
+    return (x_coord, y_coord, x_coord_new, y_coord_new)
 
 def get_spectra_over_time(sample):
     plt.close()
@@ -64,45 +102,46 @@ def get_spectra_over_time(sample):
     fig.subplots_adjust(bottom=0.25)
     ax = fig.add_subplot(111)
 
-    def calculate_spectra_on_frame(val):
-        vols_norm = list(mat[:,val]) / tot_vol[val]
-        # print(len(vols_norm))
-        x_coord = []
-        y_coord = []
-        for i in range(len(vols_norm)):
-            if vols_norm[i] > 0.002 and i >= 20:
-                x_coord.append(64 * i / 6.0)
-                y_coord.append(vols_norm[i])
+    # def calculate_spectra_on_frame(val):
+    #     vols_norm = list(mat[:,val]) / tot_vol[val]
+    #     # print(len(vols_norm))
+    #     x_coord = []
+    #     y_coord = []
+    #     for i in range(len(vols_norm)):
+    #         if vols_norm[i] > 0.002 and i >= 20:
+    #             x_coord.append(64 * i / 6.0)
+    #             y_coord.append(vols_norm[i])
+    #     y_coord /= sum(y_coord)
 
-        x_coord_new = []
-        y_coord_new = []
-        last = 0
-        print(x_coord)
-        for i in range(1, len(x_coord)):
-            if (x_coord[i] - x_coord[i - 1]) > THRESHOLD_FOR_DISTANCE:
-                print(i)
-                # print("BLAH")
-                tot = 0.0
-                weighted_x = 0.0
-                for j in range(last, i):
-                    tot += y_coord[j]
-                    weighted_x += x_coord[j] * y_coord[j]
-                weighted_x /= tot
-                x_coord_new.append(weighted_x)
-                y_coord_new.append(tot)
-                last = i
-        tot = 0.0
-        weighted_x = 0.0
-        for j in range(last, len(x_coord)):
-            tot += y_coord[j]
-            weighted_x += x_coord[j] * y_coord[j]
-        weighted_x /= tot
-        x_coord_new.append(weighted_x)
-        y_coord_new.append(tot)
+    #     x_coord_new = []
+    #     y_coord_new = []
+    #     last = 0
+    #     print(x_coord)
+    #     for i in range(1, len(x_coord)):
+    #         if (x_coord[i] - x_coord[i - 1]) > THRESHOLD_FOR_DISTANCE:
+    #             print(i)
+    #             # print("BLAH")
+    #             tot = 0.0
+    #             weighted_x = 0.0
+    #             for j in range(last, i):
+    #                 tot += y_coord[j]
+    #                 weighted_x += x_coord[j] * y_coord[j]
+    #             weighted_x /= tot
+    #             x_coord_new.append(weighted_x)
+    #             y_coord_new.append(tot)
+    #             last = i
+    #     tot = 0.0
+    #     weighted_x = 0.0
+    #     for j in range(last, len(x_coord)):
+    #         tot += y_coord[j]
+    #         weighted_x += x_coord[j] * y_coord[j]
+    #     weighted_x /= tot
+    #     x_coord_new.append(weighted_x)
+    #     y_coord_new.append(tot)
 
-        return (x_coord, y_coord, x_coord_new, y_coord_new)
+    #     return (x_coord, y_coord, x_coord_new, y_coord_new)
 
-    tup = calculate_spectra_on_frame(1)
+    tup = calculate_spectra_on_frame(mat, 0)
     print(tup)
     ax.plot(tup[0], tup[1], 'ro', tup[2], tup[3], 'bo')
     # ax.plot(tup[2], tup[3], color='blue')
@@ -117,15 +156,15 @@ def get_spectra_over_time(sample):
         ax.cla()
         ax.set_xlim([0, 4000])
         ax.set_ylim([0, 1])
-        tup = calculate_spectra_on_frame(int(val))
+        tup = calculate_spectra_on_frame(mat, int(val))
         ax.plot(tup[0], tup[1], 'ro', tup[2], tup[3], 'bo')
         # pass
     amp_slider.on_changed(sliders_on_changed)
     plt.show()
 
 flute_list = ps.get_violin_samples()
-print(flute_list[20].filename)
+print(flute_list[50].filename)
 # get_harmonic_spectra(flute_list[0])
 # get_spectrogram_of_sample(flute_list[0])
-get_spectra_over_time(flute_list[20])
+get_spectra_over_time(flute_list[50])
 
