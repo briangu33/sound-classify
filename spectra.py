@@ -4,6 +4,9 @@ import librosa.display
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
+
+THRESHOLD_FOR_DISTANCE = 100
 
 def get_frequency_matrix(sample):
     """Retrieves a [frequency, time] matrix for a given sample."""
@@ -51,6 +54,78 @@ def get_harmonic_spectra(sample):
     plt.plot(x_coord, y_coord, 'ro')
     plt.show()
 
-flute_list = ps.get_flute_samples()
-get_harmonic_spectra(flute_list[0])
+
+def get_spectra_over_time(sample):
+    plt.close()
+    mat = np.abs(get_frequency_matrix(sample))
+    tot_vol = list(np.sum(mat, axis=0))
+
+    fig = plt.figure()
+    fig.subplots_adjust(bottom=0.25)
+    ax = fig.add_subplot(111)
+
+    def calculate_spectra_on_frame(val):
+        vols_norm = list(mat[:,val]) / tot_vol[val]
+        # print(len(vols_norm))
+        x_coord = []
+        y_coord = []
+        for i in range(len(vols_norm)):
+            if vols_norm[i] > 0.002 and i >= 20:
+                x_coord.append(64 * i / 6.0)
+                y_coord.append(vols_norm[i])
+
+        x_coord_new = []
+        y_coord_new = []
+        last = 0
+        print(x_coord)
+        for i in range(1, len(x_coord)):
+            if (x_coord[i] - x_coord[i - 1]) > THRESHOLD_FOR_DISTANCE:
+                print(i)
+                # print("BLAH")
+                tot = 0.0
+                weighted_x = 0.0
+                for j in range(last, i):
+                    tot += y_coord[j]
+                    weighted_x += x_coord[j] * y_coord[j]
+                weighted_x /= tot
+                x_coord_new.append(weighted_x)
+                y_coord_new.append(tot)
+                last = i
+        tot = 0.0
+        weighted_x = 0.0
+        for j in range(last, len(x_coord)):
+            tot += y_coord[j]
+            weighted_x += x_coord[j] * y_coord[j]
+        weighted_x /= tot
+        x_coord_new.append(weighted_x)
+        y_coord_new.append(tot)
+
+        return (x_coord, y_coord, x_coord_new, y_coord_new)
+
+    tup = calculate_spectra_on_frame(1)
+    print(tup)
+    ax.plot(tup[0], tup[1], 'ro', tup[2], tup[3], 'bo')
+    # ax.plot(tup[2], tup[3], color='blue')
+
+    ax.set_xlim([0, 4000])
+    print(64 * mat.shape[1] / 6.0)
+    ax.set_ylim([0, 1])
+
+    amp_slider_ax = fig.add_axes([0.20, 0.15, 0.65, 0.03])
+    amp_slider = Slider(amp_slider_ax, 'Time', 0, len(tot_vol) - 1, valinit=0, valfmt='%0.0f')
+    def sliders_on_changed(val):
+        ax.cla()
+        ax.set_xlim([0, 4000])
+        ax.set_ylim([0, 1])
+        tup = calculate_spectra_on_frame(int(val))
+        ax.plot(tup[0], tup[1], 'ro', tup[2], tup[3], 'bo')
+        # pass
+    amp_slider.on_changed(sliders_on_changed)
+    plt.show()
+
+flute_list = ps.get_violin_samples()
+print(flute_list[20].filename)
+# get_harmonic_spectra(flute_list[0])
 # get_spectrogram_of_sample(flute_list[0])
+get_spectra_over_time(flute_list[20])
+
