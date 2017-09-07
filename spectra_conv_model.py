@@ -33,14 +33,8 @@ def read_freq_csv(sample):
 	mat = np.vectorize(lambda input: complex(input) if isinstance(input, str) else input)(mat)
 	return mat
 
-def test_normallized_input(sample):
-	# print(sample.filename)
-	mat = read_freq_csv(sample)
-	# print(mat.head())
-	# print(mat.head())
-	# mat = mat.apply(complex)
-	# mat = np.abs(spectra.get_frequency_matrix(sample))
-	# print(mat)
+def test_normallized_input(sample, has_csvs=False):
+	mat = read_freq_csv(sample) if has_csvs else spectra.get_frequency_matrix(sample)
 	mat = np.abs(mat)
 	mat = normalize(mat, norm='l1', axis=0)
 	return mat
