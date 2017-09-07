@@ -3,6 +3,7 @@ import librosa
 import librosa.display
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 
@@ -10,10 +11,15 @@ THRESHOLD_FOR_DISTANCE = 100
 
 def get_frequency_matrix(sample):
     """Retrieves a [frequency, time] matrix for a given sample."""
-    print(sample)
+    # print(sample)
     time_series = librosa.core.load(sample.filename)
-    print(len(time_series[0]))
+    # print(len(time_series[0]))
     return librosa.core.stft(time_series[0])
+
+def freq_matrix_to_csv(sample):
+    mat = pd.DataFrame(get_frequency_matrix(sample))
+    # print(sample.filename[:-4] + ".csv")
+    mat.to_csv("./res/" + sample.instr + "_spectra/" + sample.instr + "_" + sample.note + str(sample.octave) + "_" + sample.duration + "_" + sample.vol + "_" + sample.condition + ".csv")
 
 
 def get_spectrogram_of_sample(sample):
@@ -162,9 +168,10 @@ def get_spectra_over_time(sample):
     amp_slider.on_changed(sliders_on_changed)
     plt.show()
 
-flute_list = ps.get_violin_samples()
-print(flute_list[50].filename)
+flute_list = ps.get_flute_samples()
+# print(flute_list[50].filename)
 # get_harmonic_spectra(flute_list[0])
 # get_spectrogram_of_sample(flute_list[0])
-get_spectra_over_time(flute_list[50])
+# get_spectra_over_time(flute_list[50])
 
+# freq_matrix_to_csv(flute_list[0])
